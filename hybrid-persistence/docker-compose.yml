@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # Hybrid Persistence Mode (AOF + RDB Preamble) - Önerilen Yapılandırma
+  redis-hybrid:
+    image: redis:7.0-alpine
+    container_name: redis-hybrid
+    ports:
+      - "6381:6379"
+    volumes:
+      - ./data/hybrid:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --aof-use-rdb-preamble yes
+      --save 60 1000
+      --save 300 100
+      --save 900 1
+    networks:
+      - redis-network
+
+  # Karşılaştırma: Sadece RDB
+  redis-rdb-only:
+    image: redis:7.0-alpine
+    container_name: redis-rdb-only
+    ports:
+      - "6382:6379"
+    volumes:
+      - ./data/rdb-only:/data
+    command: >
+      redis-server
+      --appendonly no
+      --save 60 1000
+      --save 300 100
+      --save 900 1
+    networks:
+      - redis-network
+
+  # Karşılaştırma: Sadece AOF (Eski Format)
+  redis-aof-only:
+    image: redis:7.0-alpine
+    container_name: redis-aof-only
+    ports:
+      - "6383:6379"
+    volumes:
+      - ./data/aof-only:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --aof-use-rdb-preamble no
+    networks:
+      - redis-network
+
+  # Redis CLI için yardımcı container
+  redis-cli:
+    image: redis:7.0-alpine
+    container_name: redis-cli-helper
+    command: sleep infinity
+    networks:
+      - redis-network
+    depends_on:
+      - redis-hybrid
+
+networks:
+  redis-network:
+    driver: bridge
+

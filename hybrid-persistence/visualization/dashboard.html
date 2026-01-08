@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redis Hybrid Persistence Mode - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .aof-structure {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin-top: 15px;
+        }
+        
+        .aof-section {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        
+        .rdb-preamble {
+            background: #d1ecf1;
+            border-left: 4px solid #0c5460;
+        }
+        
+        .aof-commands {
+            background: #d4edda;
+            border-left: 4px solid #155724;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-refresh {
+            background: #28a745;
+        }
+        
+        .btn-refresh:hover {
+            background: #218838;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔴 Redis Hybrid Persistence Mode</h1>
+            <p>Real-time Monitoring Dashboard</p>
+        </div>
+        
+        <div class="grid">
+            <!-- Status Card -->
+            <div class="card">
+                <h2>📊 Status</h2>
+                <div id="status-container">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+                <button class="btn btn-refresh" onclick="refreshData()">🔄 Yenile</button>
+            </div>
+            
+            <!-- Persistence Metrics -->
+            <div class="card">
+                <h2>💾 Persistence Metrics</h2>
+                <div id="metrics-container">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+            </div>
+            
+            <!-- AOF File Structure -->
+            <div class="card full-width">
+                <h2>📁 AOF File Structure</h2>
+                <div id="aof-structure">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+            </div>
+            
+            <!-- Performance Chart -->
+            <div class="card full-width">
+                <h2>📈 Performance Metrics</h2>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const REDIS_HOST = 'localhost';
+        const REDIS_PORT = 6381;
+        
+        let performanceChart;
+        
+        // Initialize chart
+        function initChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'AOF Size (bytes)',
+                        data: [],
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Format bytes
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+        
+        // Fetch Redis info via API
+        let apiAvailable = true;
+        async function fetchRedisInfo() {
+            try {
+                const response = await fetch(`http://${REDIS_HOST}:3000/api/redis-info`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                apiAvailable = true;
+                hideApiWarning();
+                return data;
+            } catch (error) {
+                // API server çalışmıyor
+                apiAvailable = false;
+                showApiWarning();
+                // Return empty/default data structure
+                return {
+                    aof_enabled: '0',
+                    aof_use_rdb_preamble: '0',
+                    aof_current_size: '0',
+                    aof_base_size: '0',
+                    aof_rewrite_in_progress: '0',
+                    aof_last_rewrite_time_sec: '0',
+                    rdb_last_save_time: '0',
+                    has_rdb_preamble: false,
+                    aof_file_size: 0,
+                    aof_base_file_size: 0,
+                    aof_incr_file_size: 0
+                };
+            }
+        }
+        
+        // API uyarısı göster
+        function showApiWarning() {
+            let warning = document.getElementById('api-warning');
+            if (!warning) {
+                warning = document.createElement('div');
+                warning.id = 'api-warning';
+                warning.className = 'error';
+                warning.style.margin = '10px 0';
+                warning.innerHTML = `
+                    <strong>⚠ API Server çalışmıyor!</strong><br>
+                    Gerçek zamanlı veriler için API server'ı başlatın:<br>
+                    <code style="background: #f0f0f0; padding: 5px; border-radius: 3px; display: inline-block; margin-top: 5px;">
+                        cd visualization && npm install && npm start
+                    </code>
+                `;
+                document.querySelector('.header').after(warning);
+            }
+        }
+        
+        // API uyarısını gizle
+        function hideApiWarning() {
+            const warning = document.getElementById('api-warning');
+            if (warning) {
+                warning.remove();
+            }
+        }
+        
+        // Update status
+        function updateStatus(data) {
+            const container = document.getElementById('status-container');
+            container.innerHTML = `
+                <div class="stat">
+                    <span class="stat-label">AOF Enabled</span>
+                    <span class="status-badge ${data.aof_enabled === '1' ? 'status-active' : 'status-inactive'}">
+                        ${data.aof_enabled === '1' ? '✓ Active' : '✗ Inactive'}
+                    </span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">RDB Preamble</span>
+                    <span class="status-badge ${(data.aof_use_rdb_preamble === '1' || data.has_rdb_preamble) ? 'status-active' : 'status-inactive'}">
+                        ${(data.aof_use_rdb_preamble === '1' || data.has_rdb_preamble) ? '✓ Enabled' : '✗ Disabled'}
+                    </span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Rewrite In Progress</span>
+                    <span class="status-badge ${data.aof_rewrite_in_progress === '0' ? 'status-inactive' : 'status-active'}">
+                        ${data.aof_rewrite_in_progress === '0' ? '✗ No' : '✓ Yes'}
+                    </span>
+                </div>
+            `;
+        }
+        
+        // Update metrics
+        function updateMetrics(data) {
+            const container = document.getElementById('metrics-container');
+            const baseSize = parseInt(data.aof_base_file_size || data.aof_base_size || 0);
+            const incrSize = parseInt(data.aof_incr_file_size || 0);
+            const totalSize = data.aof_file_size || (baseSize + incrSize);
+            
+            container.innerHTML = `
+                <div class="stat">
+                    <span class="stat-label">AOF Current Size</span>
+                    <span class="stat-value">${formatBytes(parseInt(data.aof_current_size))}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">RDB Base Size</span>
+                    <span class="stat-value">${formatBytes(baseSize)}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">AOF Incremental Size</span>
+                    <span class="stat-value">${formatBytes(incrSize)}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Total File Size</span>
+                    <span class="stat-value">${formatBytes(totalSize)}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Last Save Time</span>
+                    <span class="stat-value">${new Date(parseInt(data.rdb_last_save_time) * 1000).toLocaleString()}</span>
+                </div>
+            `;
+        }
+        
+        // Update AOF structure visualization
+        function updateAOFStructure(data) {
+            const container = document.getElementById('aof-structure');
+            const baseSize = parseInt(data.aof_base_file_size || data.aof_base_size || 0);
+            const incrSize = parseInt(data.aof_incr_file_size || 0);
+            const currentSize = parseInt(data.aof_current_size || 0);
+            
+            // Check both has_rdb_preamble and aof_use_rdb_preamble
+            const hasRDB = data.has_rdb_preamble || data.aof_use_rdb_preamble === '1';
+            if (hasRDB && baseSize > 0) {
+                container.innerHTML = `
+                    <div class="aof-structure">
+                        <div class="aof-section rdb-preamble">
+                            <strong>🔷 RDB Preamble (Binary Format)</strong><br>
+                            File: appendonly.aof.1.base.rdb<br>
+                            Magic: "REDIS"<br>
+                            Contains: Full dataset snapshot<br>
+                            Size: ${formatBytes(baseSize)}
+                        </div>
+                        <div style="text-align: center; padding: 10px; font-size: 1.5em;">↓</div>
+                        <div class="aof-section aof-commands">
+                            <strong>🔷 AOF Commands (Text Format)</strong><br>
+                            File: appendonly.aof.1.incr.aof<br>
+                            Format: Redis Protocol<br>
+                            Contains: Commands after RDB snapshot<br>
+                            Size: ${formatBytes(incrSize || (currentSize - baseSize))}
+                        </div>
+                        <div style="margin-top: 15px; padding: 10px; background: #e7f3ff; border-radius: 5px; font-size: 0.9em;">
+                            <strong>📋 Redis 7.0+ Format:</strong> AOF files are stored in <code>/data/appendonlydir/</code> directory
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="aof-structure">
+                        <div class="aof-section aof-commands">
+                            <strong>🔷 AOF Commands Only</strong><br>
+                            Format: Redis Protocol<br>
+                            Note: RDB preamble not yet created. Run BGREWRITEAOF to enable hybrid mode.<br>
+                            <small style="color: #666;">After rewrite, base.rdb file will be created with RDB preamble.</small>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update chart
+        function updateChart(data) {
+            const now = new Date().toLocaleTimeString();
+            performanceChart.data.labels.push(now);
+            performanceChart.data.datasets[0].data.push(parseInt(data.aof_current_size));
+            
+            // Keep only last 20 data points
+            if (performanceChart.data.labels.length > 20) {
+                performanceChart.data.labels.shift();
+                performanceChart.data.datasets[0].data.shift();
+            }
+            
+            performanceChart.update();
+        }
+        
+        // Refresh all data
+        async function refreshData() {
+            try {
+                const data = await fetchRedisInfo();
+                updateStatus(data);
+                updateMetrics(data);
+                updateAOFStructure(data);
+                updateChart(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                // Show error state
+                const errorData = {
+                    aof_enabled: '0',
+                    aof_use_rdb_preamble: '0',
+                    aof_current_size: '0',
+                    aof_base_size: '0',
+                    aof_rewrite_in_progress: '0',
+                    aof_last_rewrite_time_sec: '0',
+                    rdb_last_save_time: '0',
+                    has_rdb_preamble: false,
+                    aof_file_size: 0,
+                    aof_base_file_size: 0,
+                    aof_incr_file_size: 0
+                };
+                updateStatus(errorData);
+                updateMetrics(errorData);
+                updateAOFStructure(errorData);
+            }
+        }
+        
+        // Initialize
+        initChart();
+        refreshData();
+        
+        // Auto-refresh every 5 seconds
+        setInterval(refreshData, 5000);
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  redis-aof:
+    image: redis:7.0-alpine
+    container_name: redis-aof-rewrite
+    command: redis-server --appendonly yes --auto-aof-rewrite-percentage 100 --auto-aof-rewrite-min-size 64mb
+    ports:
+      - "6385:6379"
+    volumes:
+      - ./data:/data
+    networks:
+      - aof-net
+
+networks:
+  aof-net:
+    driver: bridge

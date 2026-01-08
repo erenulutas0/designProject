@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # MongoDB for document store comparison
+  mongodb:
+    image: mongo:7.0
+    container_name: benchmark-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  # PostgreSQL for relational DB
+  postgres:
+    image: postgres:16-alpine
+    container_name: benchmark-postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: benchmarkdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Redis standalone for cache
+  redis:
+    image: redis:7.0-alpine
+    container_name: benchmark-redis
+    restart: always
+    ports:
+      - "6378:6379"
+    command: redis-server --appendonly yes
+
+  # Redis with TLS for security comparison
+  redis-tls:
+    image: redis:7.0-alpine
+    container_name: benchmark-redis-tls
+    restart: always
+    ports:
+      - "6377:6379"
+    command: redis-server --appendonly yes
+    # Note: Full TLS would require certificate setup
+
+  # Memcached for pure cache comparison
+  memcached:
+    image: memcached:1.6-alpine
+    container_name: benchmark-memcached
+    restart: always
+    ports:
+      - "11211:11211"
+    command: memcached -m 64
+
+volumes:
+  mongodb_data:
+  postgres_data:

@@ -1,0 +1,23 @@
+{
+    "name": "redis-research-backend",
+    "version": "1.0.0",
+    "description": "Backend for Redis Research Project",
+    "main": "src/index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.18.2",
+        "ioredis": "^5.3.2",
+        "pg": "^8.11.3",
+        "hdr-histogram-js": "^3.0.0",
+        "mongodb": "^6.3.0",
+        "memcached": "^2.2.2"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1"
+    }
+}
