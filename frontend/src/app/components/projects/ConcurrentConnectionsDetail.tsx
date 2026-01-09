@@ -32,8 +32,11 @@ export function ConcurrentConnectionsDetail({ project }: Props) {
 
     const chartData = results ? [
         { name: 'Redis', ops: results.redis?.opsPerSecond || 0, color: '#ef4444' },
+        { name: 'Redis Cluster', ops: results.redisCluster?.opsPerSecond || 0, color: '#a855f7' },
+        { name: 'Memcached', ops: results.memcached?.opsPerSecond || 0, color: '#06b6d4' },
+        { name: 'MongoDB', ops: results.mongodb?.opsPerSecond || 0, color: '#10b981' },
         { name: 'PostgreSQL', ops: results.postgresql?.opsPerSecond || 0, color: '#3b82f6' }
-    ] : [];
+    ].sort((a, b) => b.ops - a.ops) : [];
 
     return (
         <div className="space-y-8">
@@ -95,6 +98,20 @@ export function ConcurrentConnectionsDetail({ project }: Props) {
                                 <div className="flex justify-between items-center p-3 bg-red-500/10 border border-red-500/20 rounded">
                                     <span className="text-red-400 font-semibold">Redis</span>
                                     <span className="text-white font-mono">{Math.round(results.redis?.opsPerSecond || 0).toLocaleString()} ops/sec</span>
+                                </div>
+                                {results.redisCluster && (
+                                    <div className="flex justify-between items-center p-3 bg-purple-500/10 border border-purple-500/20 rounded">
+                                        <span className="text-purple-400 font-semibold">Redis Cluster</span>
+                                        <span className="text-white font-mono">{Math.round(results.redisCluster?.opsPerSecond || 0).toLocaleString()} ops/sec</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between items-center p-3 bg-cyan-500/10 border border-cyan-500/20 rounded">
+                                    <span className="text-cyan-400 font-semibold">Memcached</span>
+                                    <span className="text-white font-mono">{Math.round(results.memcached?.opsPerSecond || 0).toLocaleString()} ops/sec</span>
+                                </div>
+                                <div className="flex justify-between items-center p-3 bg-emerald-500/10 border border-emerald-500/20 rounded">
+                                    <span className="text-emerald-400 font-semibold">MongoDB</span>
+                                    <span className="text-white font-mono">{Math.round(results.mongodb?.opsPerSecond || 0).toLocaleString()} ops/sec</span>
                                 </div>
                                 <div className="flex justify-between items-center p-3 bg-blue-500/10 border border-blue-500/20 rounded">
                                     <span className="text-blue-400 font-semibold">PostgreSQL</span>

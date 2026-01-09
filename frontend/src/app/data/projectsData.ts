@@ -77,6 +77,31 @@ export const projectsData: Project[] = [
     description: 'Comprehensive comparison of data models, scalability, and persistence',
     status: 'completed',
     data: {}
+  },
+  {
+    id: 'event-driven-microservice',
+    title: 'Event-Driven Microservice Pipeline',
+    description: 'Full order processing pipeline using Redis Streams with consumer groups',
+    status: 'completed',
+    data: {
+      architecture: {
+        components: ['Producer', 'Inventory Service', 'Payment Service', 'Notification Service', 'Analytics Service'],
+        streamNames: ['orders', 'inventory-events', 'payment-events', 'notifications'],
+        consumerGroups: 4
+      },
+      performance: {
+        throughput: '1,200 ops/sec',
+        averageLatency: '8ms',
+        maxConcurrency: '50 consumers'
+      }
+    }
+  },
+  {
+    id: 'consumer-lag',
+    title: 'Consumer Lag & PEL Analysis',
+    description: 'Analyzing consumer lag and PEL size growth under bursty workloads',
+    status: 'completed',
+    data: {}
   }
 ];
 

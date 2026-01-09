@@ -34,7 +34,8 @@ export function SecurityComparisonDetail({ project }: Props) {
     const sections = [
         { key: 'redis', name: 'Redis', color: 'green' },
         { key: 'postgresql', name: 'PostgreSQL', color: 'blue' },
-        { key: 'mongodb', name: 'MongoDB', color: 'emerald' }
+        { key: 'mongodb', name: 'MongoDB', color: 'emerald' },
+        { key: 'memcached', name: 'Memcached', color: 'cyan' }
     ];
 
     return (

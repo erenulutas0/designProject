@@ -30,6 +30,8 @@ export function MemoryUsageDetail({ project }: Props) {
 
     const data = results ? [
         { name: 'Redis', value: results.redis?.usedBytes || 0, human: results.redis?.usedHuman, color: '#ef4444' },
+        { name: 'Redis Cluster', value: results.redisCluster?.usedBytes || 0, human: results.redisCluster?.usedHuman, color: '#f97316' },
+        { name: 'Memcached', value: results.memcached?.usedBytes || 0, human: results.memcached?.usedHuman, color: '#06b6d4' },
         { name: 'PostgreSQL', value: results.postgresql?.usedBytes || 0, human: results.postgresql?.usedHuman, color: '#3b82f6' },
         { name: 'MongoDB', value: results.mongodb?.usedBytes || 0, human: results.mongodb?.usedHuman, color: '#10b981' }
     ].filter(i => i.value > 0) : [];
@@ -104,7 +106,8 @@ export function MemoryUsageDetail({ project }: Props) {
                                     <h4 className="text-lg font-bold text-white">{item.name}</h4>
                                     <span className="text-zinc-400 text-sm">
                                         {item.name === 'Redis' ? 'In-Memory Key-Value' :
-                                            item.name === 'PostgreSQL' ? 'Relational (Disk)' : 'Document Store'}
+                                            item.name === 'PostgreSQL' ? 'Relational (Disk)' :
+                                                item.name === 'MongoDB' ? 'Document Store' : 'Memory Cache'}
                                     </span>
                                 </div>
                             </div>

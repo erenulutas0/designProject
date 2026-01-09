@@ -28,7 +28,8 @@ export function WriteDurabilityDetail({ project }: Props) {
     const dbs = [
         { key: 'redis', name: 'Redis (AOF)', icon: Database, color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
         { key: 'postgresql', name: 'PostgreSQL (WAL)', icon: Server, color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
-        { key: 'mongodb', name: 'MongoDB (Journal)', icon: Database, color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' }
+        { key: 'mongodb', name: 'MongoDB (Journal)', icon: Database, color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+        { key: 'memcached', name: 'Memcached', icon: Server, color: 'text-cyan-500', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' }
     ];
 
     return (
