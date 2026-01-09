@@ -73,7 +73,7 @@ A custom benchmarking suite running on Node.js/Backend that measures:
 *Demonstrates throughput stability (16k+ ops/s) and zero data loss using Redis Streams Consumer Groups despite injected service failures.*
 
 ### Latency Comparison (P99 Analysis)
-![P99 Latency](assets/p99-benchmark.png)
+![P99 Latency](assets/p99_4.png)
 *Comparing tail latencies across Redis, Memcached, and Postgres. Shows how in-memory structures outperform disk-based WAL systems in high-concurrency reads.*
 
 ### Cluster Failover & Durability
