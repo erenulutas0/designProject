@@ -1,10 +1,40 @@
 # Redis & Distributed Database Performance Engineering Dashboard
 
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+
 ![Project Banner](assets/dashboard-main2.png)
 
 This project is an **interactive engineering playground** designed to benchmark, visualize, and analyze the behavior of **Redis** (Standalone, Cluster, Sentinel) against Traditional RDBMS (**PostgreSQL**) and NoSQL (**MongoDB**, **Memcached**) solutions under high-concurrency scenarios.
 
 Unlike simple "Hello World" tutorials, this dashboard simulates **real-world distributed system patterns** like Event-Driven Microservices, Failover/Recovery, and Write Durability vs. Performance trade-offs.
+
+## 🏗 System Architecture
+
+```mermaid
+graph TD
+    Client[React Dashboard] -->|HTTP/WS| API[Node.js Backend]
+    API -->|Read/Write| R_Cluster[Redis Cluster]
+    API -->|Failover Test| R_Sentinel[Redis Sentinel]
+    API -->|Comparison| PG[(PostgreSQL)]
+    API -->|Comparison| Mongo[(MongoDB)]
+    R_Cluster -->|Streams| Workers[Microservice Workers]
+```
+
+## 📂 Project Structure
+
+```text
+.
+├── backend          # Node.js API & Benchmarking Suite
+├── frontend         # React/Vite Dashboard
+├── cluster          # Redis Cluster Docker configs
+├── sentinel         # Redis Sentinel Docker configs
+├── benchmarking     # Multi-DB (Mongo, Postgres, Memcached) configs
+└── assets           # Project screenshots and diagrams
+```
 
 ## 🚀 Key Engineering Capabilities
 
