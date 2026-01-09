@@ -1,6 +1,6 @@
 # Redis & Distributed Database Performance Engineering Dashboard
 
-![Project Banner](assets/dashboard-main.png)
+![Project Banner](assets/dashboard-main2.png)
 
 This project is an **interactive engineering playground** designed to benchmark, visualize, and analyze the behavior of **Redis** (Standalone, Cluster, Sentinel) against Traditional RDBMS (**PostgreSQL**) and NoSQL (**MongoDB**, **Memcached**) solutions under high-concurrency scenarios.
 
