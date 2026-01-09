@@ -11,7 +11,7 @@ export const projectsData: Project[] = [
     id: 'p99-latency',
     title: 'P99 Latency & Multi-DB Comparison',
     description: 'Benchmarking latency between SQL, Redis, Redis Cluster, MongoDB, and Memcached',
-    status: 'in-progress',
+    status: 'completed',
     data: {
       benchmarkResults: {
         postgresql: { p50: 8.2, p90: 15.1, p99: 87.5 },
@@ -40,35 +40,35 @@ export const projectsData: Project[] = [
     id: 'aof-rewrite-latency',
     title: 'AOF Rewrite Impact',
     description: 'Measuring latency spikes during background AOF rewrite operations',
-    status: 'in-progress',
+    status: 'completed',
     data: {}
   },
   {
     id: 'concurrent-connections',
     title: 'Concurrent Connections & Thread Safety',
     description: 'Benchmarks Redis vs PostgreSQL under high concurrency (50+ clients)',
-    status: 'planned',
+    status: 'completed',
     data: {}
   },
   {
     id: 'durability-benchmark',
     title: 'Write Durability & Data Safety',
     description: 'Comparing data safety risks between AOF fsync, WAL, and Journaling',
-    status: 'planned',
+    status: 'completed',
     data: {}
   },
   {
     id: 'memory-usage',
     title: 'Memory Usage Analysis',
     description: 'Comparing RAM usage between Redis, PostgreSQL, and MongoDB for same dataset',
-    status: 'planned',
+    status: 'completed',
     data: {}
   },
   {
     id: 'security-comparison',
     title: 'Security Features Comparison',
     description: 'Analysis of ACLs, Encryption, and Authentication methods across databases',
-    status: 'planned',
+    status: 'completed',
     data: {}
   },
   {
